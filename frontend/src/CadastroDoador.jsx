@@ -1,9 +1,9 @@
+
 import { useState } from 'react';
 import axios from 'axios';
 
 function CadastroDoador() {
     const [formData, setFormData] = useState({
-        id: '',
         nome: '',
         genero: 'MASCULINO',
         tiposanguineo: 'O+',
@@ -30,7 +30,9 @@ function CadastroDoador() {
             const response = await axios.post('http://localhost:8000/api/doador', formData);
             setMessage('Doador cadastrado com sucesso! ID: ' + response.data.id);
         } catch (error) {
-            setMessage('Erro ao cadastrar: ' + (error.response?.data?.detail || error.message));
+            const detail = error.response?.data?.detail;
+            const errorMsg = typeof detail === 'object' ? JSON.stringify(detail) : (detail || error.message);
+            setMessage('Erro ao cadastrar: ' + errorMsg);
         }
     };
 
@@ -38,7 +40,6 @@ function CadastroDoador() {
         <div className="card">
             <h2>Cadastro de Doador</h2>
             <form onSubmit={handleSubmit} className="form-grid">
-                <input name="id" placeholder="ID (ex: P007)" onChange={handleChange} required />
                 <input name="nome" placeholder="Nome Completo" onChange={handleChange} required />
                 <select name="genero" onChange={handleChange}>
                     <option value="MASCULINO">Masculino</option>
