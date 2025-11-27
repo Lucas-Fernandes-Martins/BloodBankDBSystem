@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route, Link } from 'react-router-dom';
-import CadastroDoador from './CadastroDoador';
-import ConsultaEstoque from './ConsultaEstoque';
+import RoleSelector from './RoleSelector';
+import Dashboard from './Dashboard';
+import DebugDashboard from './components/DebugDashboard';
 import './index.css';
 
 function App() {
@@ -10,15 +11,16 @@ function App() {
         <nav className="navbar">
           <h1>Blood Bank System</h1>
           <div className="links">
-            <Link to="/">Cadastro de Doador</Link>
-            <Link to="/consulta">Consulta de Estoque</Link>
+            <Link to="/">Início</Link>
+            <Link to="/debug">Debug DB</Link>
           </div>
         </nav>
 
         <div className="content">
           <Routes>
-            <Route path="/" element={<CadastroDoador />} />
-            <Route path="/consulta" element={<ConsultaEstoque />} />
+            <Route path="/" element={<RoleSelector />} />
+            <Route path="/dashboard/:role" element={<Dashboard />} />
+            <Route path="/debug" element={<DebugDashboard />} />
           </Routes>
         </div>
       </div>
