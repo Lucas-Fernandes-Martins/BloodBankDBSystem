@@ -80,8 +80,9 @@ def get_hospitals_all_hemocentros():
             with conn.cursor(row_factory=dict_row) as cur:
                 # Division Query: Find hospitals that have solicited from ALL hemocentros
                 query = """
-                    SELECT H.nome, H.CNPJ
+                    SELECT I.nome, H.CNPJ
                     FROM Hospital H
+                    JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
                     WHERE NOT EXISTS (
                         (SELECT CNPJ FROM Hemocentro)
                         EXCEPT
@@ -306,6 +307,107 @@ def get_table_content(table_name: str):
         with get_db_connection() as conn:
             with conn.cursor(row_factory=dict_row) as cur:
                 cur.execute(f"SELECT * FROM {table_name} LIMIT 100")
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Metrics Endpoints ---
+
+@router.get("/metrics/blood-stock")
+def get_metrics_blood_stock():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # Group By Query: Count valid blood bags by type
+                cur.execute("""
+                    SELECT TipoSangue, COUNT(*) as total
+                    FROM BolsaSangue
+                    WHERE Valido = TRUE
+                    GROUP BY TipoSangue
+                    ORDER BY total DESC
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/metrics/solicitations-by-hospital")
+def get_metrics_solicitations_by_hospital():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # Left Join Query: List all hospitals and count of solicitations (even if 0)
+                cur.execute("""
+                    SELECT I.nome, COUNT(S.Hospital) as total_solicitacoes
+                    FROM Hospital H
+                    JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
+                    LEFT JOIN Solicitacao S ON H.CNPJ = S.Hospital
+                    GROUP BY H.CNPJ, I.nome
+                    ORDER BY total_solicitacoes DESC
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+# --- Authentication Endpoints ---
+
+from pydantic import BaseModel
+
+class LoginRequest(BaseModel):
+    login: str
+    senha: str
+
+@router.post("/login")
+def login(credentials: LoginRequest):
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                cur.execute("SELECT Role FROM Usuario WHERE Login = %s AND Senha = %s", (credentials.login, credentials.senha))
+                user = cur.fetchone()
+                if user:
+                    return {"message": "Login successful", "role": user['role']}
+                else:
+                    raise HTTPException(status_code=401, detail="Invalid credentials")
+    except HTTPException as he:
+        raise he
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/metrics/map-data")
+def get_metrics_map_data():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # Get all institutions with coordinates and their types
+                cur.execute("""
+                    SELECT 
+                        I.CNPJ, 
+                        I.nome, 
+                        I.Latitude, 
+                        I.Longitude,
+                        STRING_AGG(T.tipo, ', ') as tipos
+                    FROM InstituicaoSaude I
+                    LEFT JOIN TipoInstituicao T ON I.CNPJ = T.CNPJ
+                    WHERE I.Latitude IS NOT NULL AND I.Longitude IS NOT NULL
+                    GROUP BY I.CNPJ, I.nome, I.Latitude, I.Longitude
+                """)
+                return cur.fetchall()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+@router.get("/metrics/procedures-by-doctor")
+def get_metrics_procedures_by_doctor():
+    try:
+        with get_db_connection() as conn:
+            with conn.cursor(row_factory=dict_row) as cur:
+                # Multiple Joins Query: Count procedures per doctor
+                cur.execute("""
+                    SELECT P.nome, COUNT(Pr.Medico) as total_procedimentos
+                    FROM Medico M
+                    JOIN Pessoa P ON M.Id = P.Id
+                    JOIN Procedimento Pr ON M.Id = Pr.Medico
+                    GROUP BY M.Id, P.nome
+                    ORDER BY total_procedimentos DESC
+                """)
                 return cur.fetchall()
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))

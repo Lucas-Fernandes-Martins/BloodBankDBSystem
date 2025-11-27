@@ -57,10 +57,21 @@ function InstituicaoDashboard() {
   const runDivisionQuery = async () => {
     try {
       const response = await fetch('http://localhost:8000/api/division/hospitals-all-hemocentros');
-      const data = await response.json();
-      setDivisionResult(data);
+      if (response.ok) {
+        const data = await response.json();
+        if (Array.isArray(data)) {
+          setDivisionResult(data);
+        } else {
+          console.error("Expected array, got:", data);
+          setDivisionResult([]);
+        }
+      } else {
+        console.error("Failed to fetch division query:", response.statusText);
+        setDivisionResult([]);
+      }
     } catch (error) {
       console.error('Error:', error);
+      setDivisionResult([]);
     }
   };
 

@@ -1,11 +1,11 @@
 -- Alimentação Inicial da Base de Dados
 
 -- 1. InstituicaoSaude
-INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro) VALUES 
-('12.345.678/0001-90', 'Hospital Santa Casa', 'São Paulo', 'SP', 'Rua Dr. Cesario Motta Jr, 112'),
-('98.765.432/0001-10', 'Hemocentro Regional', 'Campinas', 'SP', 'Rua Carlos Chagas, 480'),
-('11.222.333/0001-44', 'Posto de Coleta Centro', 'São Paulo', 'SP', 'Av. Paulista, 1000'),
-('55.666.777/0001-88', 'Hospital das Clinicas', 'São Paulo', 'SP', 'Av. Dr. Enéas Carvalho de Aguiar, 255');
+INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro, Latitude, Longitude) VALUES 
+('12.345.678/0001-90', 'Hospital Santa Casa', 'São Paulo', 'SP', 'Rua Dr. Cesario Motta Jr, 112', -23.5423, -46.6492),
+('98.765.432/0001-10', 'Hemocentro Regional', 'Campinas', 'SP', 'Rua Carlos Chagas, 480', -22.8298, -47.0626),
+('11.222.333/0001-44', 'Posto de Coleta Centro', 'São Paulo', 'SP', 'Av. Paulista, 1000', -23.5617, -46.6560),
+('55.666.777/0001-88', 'Hospital das Clinicas', 'São Paulo', 'SP', 'Av. Dr. Enéas Carvalho de Aguiar, 255', -23.5573, -46.6688);
 
 -- 2. Subtypes
 INSERT INTO Hospital (CNPJ) VALUES 
@@ -99,3 +99,14 @@ INSERT INTO Solicitacao (Hospital, DataHora, Hemocentro, QntOPlus, QntOMinus, Qn
 -- 15. Transferencia
 INSERT INTO Transferencia (HemoOrigem, HemoDestino, DataHora, QntOPlus, QntOMinus, QntAPlus, QntAMinus, QntBPlus, QntBMinus, QntABPlus, QntABMinus, AceitaNegada) VALUES 
 ('98.765.432/0001-10', '98.765.432/0001-10', '2023-10-10 15:00:00', 2, 0, 0, 0, 0, 0, 0, 0, TRUE); -- Self transfer for example, or need another Hemocentro
+
+-- 16. Usuarios
+INSERT INTO Usuario (Login, Senha, Role) VALUES
+('admin', 'admin', 'admin'),
+('medico', '123', 'medico'),
+('enfermeiro', '123', 'enfermeiro'),
+('biomedico', '123', 'biomedico'),
+('agente', '123', 'agente'),
+('instituicao', '123', 'instituicao'),
+('doador', '123', 'doador'),
+('receptor', '123', 'receptor');

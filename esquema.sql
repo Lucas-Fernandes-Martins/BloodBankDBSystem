@@ -7,6 +7,8 @@ CREATE TABLE InstituicaoSaude (
     cidade VARCHAR(40),
     estado VARCHAR(2),
     logradouro VARCHAR(100),
+    Latitude DECIMAL(10, 8),
+    Longitude DECIMAL(11, 8),
     CHECK (CNPJ ~ '^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')
 );
 
@@ -228,4 +230,11 @@ CREATE TABLE Transferencia (
     PRIMARY KEY (HemoOrigem, HemoDestino, DataHora),
     FOREIGN KEY (HemoOrigem) REFERENCES Hemocentro(CNPJ),
     FOREIGN KEY (HemoDestino) REFERENCES Hemocentro(CNPJ)
+);
+
+-- 16. Usuario (Authentication)
+CREATE TABLE Usuario (
+    Login VARCHAR(50) PRIMARY KEY,
+    Senha VARCHAR(50) NOT NULL,
+    Role VARCHAR(20) NOT NULL
 );
