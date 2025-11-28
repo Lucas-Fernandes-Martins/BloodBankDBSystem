@@ -9,18 +9,18 @@ CREATE TABLE InstituicaoSaude (
     logradouro VARCHAR(100),
     Latitude DECIMAL(10, 8),
     Longitude DECIMAL(11, 8),
-    CHECK (CNPJ ~ '^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')
+    CONSTRAINT CHK_INSTITUICAO CHECK (CNPJ ~ '^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')
 );
 
 -- 2. Subtypes of InstituicaoSaude
 CREATE TABLE Hospital (
     CNPJ CHAR(18) PRIMARY KEY,
-    FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
+    CONSTRAINT FK_HOSPITAL FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
 );
 
 CREATE TABLE Hemocentro (
     CNPJ CHAR(18) PRIMARY KEY,
-    FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
+    CONSTRAINT FK_HEMOCENTRO FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
 );
 
 CREATE TABLE CentroDeColeta (
@@ -32,17 +32,17 @@ CREATE TABLE CentroDeColeta (
     ativo BOOLEAN NOT NULL,
     dataAbertura DATE,
     dataFechamento DATE,
-    PRIMARY KEY (CNPJ, codigo),
-    FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
+    CONSTRAINT PK_COLETA PRIMARY KEY (CNPJ, codigo),
+    CONSTRAINT FK_COLETA FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
 );
 
 -- 3. TipoInstituicao (Multivalued Attribute / Classification)
 CREATE TABLE TipoInstituicao (
     CNPJ CHAR(18),
     tipo VARCHAR(20),
-    PRIMARY KEY (CNPJ, tipo),
-    FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE,
-    CONSTRAINT CHK_TIPO CHECK (tipo IN ('CENTRO COLETA', 'BANCO DE SANGUE', 'HOSPITAL', 'HEMOCENTRO'))
+    CONSTRAINT PK_TIPOINST PRIMARY KEY (CNPJ, tipo),
+    CONSTRAINT FK_TIPOINST FOREIGN KEY (CNPJ) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE,
+    CONSTRAINT CHK_TIPOINST CHECK (tipo IN ('CENTRO COLETA', 'BANCO DE SANGUE', 'HOSPITAL', 'HEMOCENTRO'))
 );
 
 -- 4. EstoqueSangue
@@ -56,12 +56,13 @@ CREATE TABLE EstoqueSangue (
     NumAPlus INTEGER,
     NumBPlus INTEGER,
     NumABPlus INTEGER,
-    FOREIGN KEY (InstituicaoSaude) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
+    CONSTRAINT FK_ESTOQUESANGUE FOREIGN KEY (InstituicaoSaude) REFERENCES InstituicaoSaude(CNPJ) ON DELETE CASCADE
 );
 
 -- 5. Pessoa (Supertype)
 CREATE TABLE Pessoa (
-    Id VARCHAR(10) PRIMARY KEY,
+    Id VARCHAR(10),
+    cpf CHAR(14),
     nome VARCHAR(40) NOT NULL,
     genero VARCHAR(20),
     tiposanguineo CHAR(3),
@@ -71,7 +72,8 @@ CREATE TABLE Pessoa (
     dataNascimento DATE NOT NULL,
     telefone CHAR(13),
     email VARCHAR(30),
-    cpf CHAR(14) UNIQUE,
+    CONSTRAINT PK_PESSOA PRIMARY KEY(Id),
+    CONSTRAINT UK_PESSOA UNIQUE(cpf),
     CONSTRAINT CHK_GENERO CHECK (genero IN ('MASCULINO', 'FEMININO', 'OUTRO')),
     CONSTRAINT CHK_CPF CHECK (cpf ~ '^\d{3}\.\d{3}\.\d{3}-\d{2}$'),
     CONSTRAINT CHK_TELEFONE CHECK (telefone ~ '^\d{2} \d{5}-\d{4}$'),
@@ -83,15 +85,15 @@ CREATE TABLE Pessoa (
 CREATE TABLE TipoPessoa (
     Id VARCHAR(10),
     tipo VARCHAR(20),
-    PRIMARY KEY (Id, tipo),
-    FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
+    CONSTRAINT PK_TIPOPESSOA PRIMARY KEY (Id, tipo),
+    CONSTRAINT FK_TIPOPESSOA FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
 );
 
 -- 7. Subtypes of Pessoa (Profesionais)
 CREATE TABLE Biomedico (
     Id VARCHAR(10) PRIMARY KEY,
     CRBM VARCHAR(10) UNIQUE,
-    FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
+     CONSTRAINT FK_BIOMEDICO FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
 );
 
 CREATE TABLE Enfermeiro (
