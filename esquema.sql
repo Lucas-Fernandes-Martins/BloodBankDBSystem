@@ -238,3 +238,16 @@ CREATE TABLE Usuario (
     Senha VARCHAR(50) NOT NULL,
     Role VARCHAR(20) NOT NULL
 );
+
+-- 17. RBAC (Permissions)
+CREATE TABLE Permissao (
+    Id INT PRIMARY KEY,
+    Nome VARCHAR(50) UNIQUE NOT NULL
+);
+
+CREATE TABLE RolePermissao (
+    Role VARCHAR(20),
+    PermissaoId INT,
+    PRIMARY KEY (Role, PermissaoId),
+    FOREIGN KEY (PermissaoId) REFERENCES Permissao(Id)
+);
