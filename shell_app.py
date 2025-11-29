@@ -125,7 +125,76 @@ def register_user(queries):
         
     except Exception as e:
         print(f"Falha no registro: {e}")
+def run_estoque_filtrado(queries, user):
+    cnpj = get_input("CNPJ", "98.765.432/0001-10")
+    results = execute_query('estoque_filtrado', queries['estoque_filtrado'], (cnpj,))
+    print_results(results)
 
+def run_stock_by_city(queries, user):
+    city = get_input("Cidade (ex: São Paulo)", "São Paulo")
+    results = execute_query('stock_by_city', queries['stock_by_city'], (f"%{city}%",))
+    print_results(results)
+
+def run_attendance_trends(queries, user):
+    role = user['role']
+    if role == 'medico':
+        medico_id = user['pessoaid']
+        print(f"Usando ID do Médico logado: {medico_id}")
+    else:
+        medico_id = get_input("ID do Médico", "P003")
+    receptor_id = get_input("ID do Receptor", "P002")
+    results = execute_query('attendance_trends', queries['attendance_trends'], (medico_id, receptor_id))
+    print_results(results)
+
+def run_donations_per_month(queries, user):
+    centro_cnpj = get_input("CNPJ do Centro de Coleta", "11.222.333/0001-44")
+    results = execute_query('donations_per_month', queries['donations_per_month'], (centro_cnpj,))
+    print_results(results)
+
+def run_receptors_by_blood_type(queries, user):
+    blood_type = get_input("Tipo Sanguíneo do Doador (ex: O+)", "O+")
+    results = execute_query('receptors_by_blood_type', queries['receptors_by_blood_type'], (blood_type, blood_type, blood_type, blood_type, blood_type, blood_type, blood_type, blood_type))
+    print_results(results)
+
+def run_donor_history(queries, user):
+    doador_id = get_input("ID do Doador", "P001")
+    results = execute_query('donor_history', queries['donor_history'], (doador_id,))
+    print_results(results)
+
+def run_testing_effectiveness(queries, user):
+    role = user['role']
+    if role == 'biomedico':
+        biomedico_id = user['pessoaid']
+        print(f"Usando ID do Biomédico logado: {biomedico_id}")
+    else:
+        biomedico_id = get_input("ID do Biomédico", "P005")
+    results = execute_query('testing_effectiveness', queries['testing_effectiveness'], (biomedico_id,))
+    print_results(results)
+
+def run_solicitations_fulfilled(queries, user):
+    hospital_cnpj = get_input("CNPJ do Hospital", "12.345.678/0001-90")
+    results = execute_query('solicitations_fulfilled', queries['solicitations_fulfilled'], (hospital_cnpj,))
+    print_results(results)
+
+def run_stock_turnover(queries, user):
+    hemocentro_cnpj = get_input("CNPJ do Hemocentro", "98.765.432/0001-10")
+    results = execute_query('stock_turnover', queries['stock_turnover'], (hemocentro_cnpj,))
+    print_results(results)
+
+def run_campaign_analysis(queries, user):
+    start_date = get_input("Data Início (AAAA-MM-DD)", "2023-01-01")
+    end_date = get_input("Data Fim (AAAA-MM-DD)", "2023-12-31")
+    results = execute_query('campaign_analysis', queries['campaign_analysis'], (start_date, end_date))
+    print_results(results)
+
+def run_simple_query(query_name):
+    def _run(queries, user):
+        results = execute_query(query_name, queries[query_name])
+        print_results(results)
+    return _run
+
+def register_user_wrapper(queries, user):
+    register_user(queries)
 def main():
     queries = load_queries(CONSULTAS_FILE)
     
@@ -143,47 +212,48 @@ def main():
             options = []
             if role == 'admin' or role == 'instituicao':
                 options = [
-                    ('Registrar Usuário', register_user),
-                    ('Listar Doadores', 'list_doadores'),
-                    ('Listar Médicos', 'list_medicos'),
-                    ('Ver Estoque', 'estoque'),
-                    ('Métricas: Estoque de Sangue por Tipo', 'blood_stock_by_type'),
-                    ('Métricas: Procedimentos por Médico', 'procedures_by_doctor'),
-                    ('Métricas: Solicitações por Hospital', 'solicitations_by_hospital'),
-                    ('Métricas: Hospitais (Todos os Hemocentros)', 'hospitals_all_hemocentros'),
-                    ('Métricas: Dados do Mapa', 'map_data'),
-                    ('Métricas: Doadores Anônimos', 'doadores_anonimos'),
-                    ('(*) Estoque por Cidade', 'stock_by_city'),
-                    ('(*) Solicitações Atendidas (Hospital)', 'solicitations_fulfilled')
+                    ('Registrar Usuário', register_user_wrapper),
+                    ('Listar Doadores', run_simple_query('list_doadores')),
+                    ('Listar Médicos', run_simple_query('list_medicos')),
+                    ('Ver Estoque', run_simple_query('estoque')),
+                    ('Métricas: Estoque de Sangue por Tipo', run_simple_query('blood_stock_by_type')),
+                    ('Métricas: Procedimentos por Médico', run_simple_query('procedures_by_doctor')),
+                    ('Métricas: Solicitações por Hospital', run_simple_query('solicitations_by_hospital')),
+                    ('Métricas: Hospitais (Todos os Hemocentros)', run_simple_query('hospitals_all_hemocentros')),
+                    ('Métricas: Dados do Mapa', run_simple_query('map_data')),
+                    ('Métricas: Doadores Anônimos', run_simple_query('doadores_anonimos')),
+                    ('(*) Estoque por Cidade', run_stock_by_city),
+                    ('(*) Solicitações Atendidas (Hospital)', run_solicitations_fulfilled),
+                    ('(*) Hospitais que solicitaram a todos os Hemocentros', run_simple_query('hospitals_all_hemocentros_div'))
                 ]
             elif role == 'medico':
                 options = [
-                    ('Listar Doadores', 'list_doadores'),
-                    ('Listar Receptores', 'list_receptores'),
-                    ('Listar Hospitais', 'list_hospitais'),
-                    ('(*) Análise de Tendências em Atendimentos', 'attendance_trends'),
-                    ('(*) Receptores por Tipo Sanguíneo Compatível', 'receptors_by_blood_type'),
-                    ('(*) Compatibilidade Doador-Receptor', 'donor_receptor_compatibility')
+                    ('Listar Doadores', run_simple_query('list_doadores')),
+                    ('Listar Receptores', run_simple_query('list_receptores')),
+                    ('Listar Hospitais', run_simple_query('list_hospitais')),
+                    ('(*) Análise de Tendências em Atendimentos', run_attendance_trends),
+                    ('(*) Receptores por Tipo Sanguíneo Compatível', run_receptors_by_blood_type),
+                    ('(*) Compatibilidade Doador-Receptor', run_simple_query('donor_receptor_compatibility'))
                 ]
             elif role == 'enfermeiro':
                 options = [
-                    ('Listar Triagens', 'list_triagens'),
-                    ('Listar Doadores', 'list_doadores'),
-                    ('(*) Histórico de Doações de um Doador', 'donor_history')
+                    ('Listar Triagens', run_simple_query('list_triagens')),
+                    ('Listar Doadores', run_simple_query('list_doadores')),
+                    ('(*) Histórico de Doações de um Doador', run_donor_history)
                 ]
             elif role == 'biomedico':
                 options = [
-                    ('Listar Biomédicos', 'list_biomedicos'),
-                    ('Ver Estoque', 'estoque'),
-                    ('(*) Procedimentos Anonimizados', 'procedimentos_anonimos'),
-                    ('(*) Efetividade de Testagens', 'testing_effectiveness'),
-                    ('(*) Rotatividade de Estoque', 'stock_turnover')
+                    ('Listar Biomédicos', run_simple_query('list_biomedicos')),
+                    ('Ver Estoque', run_simple_query('estoque')),
+                    ('(*) Procedimentos Anonimizados', run_simple_query('procedimentos_anonimos')),
+                    ('(*) Efetividade de Testagens', run_testing_effectiveness),
+                    ('(*) Rotatividade de Estoque', run_stock_turnover)
                 ]
             elif role == 'agente':
                  options = [
-                    ('Listar Agentes', 'list_agentes'),
-                    ('(*) Doadores Anonimizados', 'doadores_anonimos'),
-                    ('(*) Campanhas de Doação', 'campaign_analysis')
+                    ('Listar Agentes', run_simple_query('list_agentes')),
+                    ('(*) Doadores Anonimizados', run_simple_query('doadores_anonimos')),
+                    ('(*) Campanhas de Doação', run_campaign_analysis)
                 ]
             
             for i, (label, _) in enumerate(options):
@@ -198,58 +268,12 @@ def main():
             try:
                 idx = int(choice) - 1
                 if 0 <= idx < len(options):
-                    _, action = options[idx]
+                    label, action = options[idx]
+                    print(f"\n=== {label} ===")
                     if callable(action):
-                        action(queries)
+                        action(queries, user)
                     else:
-                        print(f"\n--- Executando: {action} ---")
-                        # Handle specific params if needed (simplified for now)
-                        params = None
-                        if action == 'estoque_filtrado':
-                             cnpj = get_input("CNPJ", "98.765.432/0001-10")
-                             params = (cnpj,)
-                        elif action == 'stock_by_city':
-                             city = get_input("Cidade (ex: São Paulo)", "São Paulo")
-                             params = (f"%{city}%",)
-                        elif action == 'attendance_trends':
-                             if role == 'medico':
-                                 medico_id = user['pessoaid']
-                                 print(f"Usando ID do Médico logado: {medico_id}")
-                             else:
-                                 medico_id = get_input("ID do Médico", "P003")
-                             receptor_id = get_input("ID do Receptor", "P002")
-                             params = (medico_id, receptor_id)
-                        elif action == 'donations_per_month':
-                             centro_cnpj = get_input("CNPJ do Centro de Coleta", "11.222.333/0001-44")
-                             params = (centro_cnpj,)
-                        elif action == 'receptors_by_blood_type':
-                             blood_type = get_input("Tipo Sanguíneo do Doador (ex: O+)", "O+")
-                             params = (blood_type, blood_type, blood_type, blood_type, blood_type, blood_type, blood_type, blood_type)
-                        elif action == 'donor_history':
-                             doador_id = get_input("ID do Doador", "P001")
-                             params = (doador_id,)
-                        elif action == 'testing_effectiveness':
-                             if role == 'biomedico':
-                                 biomedico_id = user['pessoaid']
-                                 print(f"Usando ID do Biomédico logado: {biomedico_id}")
-                             else:
-                                 biomedico_id = get_input("ID do Biomédico", "P005")
-                             params = (biomedico_id,)
-                        elif action == 'solicitations_fulfilled':
-                             hospital_cnpj = get_input("CNPJ do Hospital", "12.345.678/0001-90")
-                             params = (hospital_cnpj,)
-                        elif action == 'stock_turnover':
-                             hemocentro_cnpj = get_input("CNPJ do Hemocentro", "98.765.432/0001-10")
-                             params = (hemocentro_cnpj,)
-                        elif action == 'campaign_analysis':
-                             start_date = get_input("Data Início (AAAA-MM-DD)", "2023-01-01")
-                             end_date = get_input("Data Fim (AAAA-MM-DD)", "2023-12-31")
-                             params = (start_date, end_date)
-                        
-                        results = execute_query(action, queries[action], params)
-                        if results:
-                            print_results(results)
-                        input("\nPressione Enter para continuar...")
+                        print("Erro: Ação não é executável.")
                 else:
                     print("Opção inválida.")
             except ValueError:

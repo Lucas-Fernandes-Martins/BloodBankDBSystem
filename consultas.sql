@@ -314,3 +314,16 @@ SELECT
     COUNT(*) as total_doadores
 FROM Triagem
 WHERE DataHora BETWEEN %s AND %s;
+
+-- name: hospitals_all_hemocentros_div
+-- (*) Hospitais que solicitaram a todos os Hemocentros (Divisão Relacional com EXCEPT/MINUS)
+SELECT I.nome, H.CNPJ
+FROM Hospital H
+JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
+WHERE NOT EXISTS (
+    -- Conjunto de todos os Hemocentros
+    (SELECT CNPJ FROM Hemocentro)
+    EXCEPT
+    -- Conjunto dos Hemocentros que este hospital já solicitou
+    (SELECT Hemocentro FROM Solicitacao S WHERE S.Hospital = H.CNPJ)
+);

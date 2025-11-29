@@ -1,64 +1,62 @@
-# Blood Bank Database System - Part 3
+# Sistema de Banco de Dados de Banco de Sangue
 
-## Prerequisites
+Este projeto implementa um sistema de gerenciamento para bancos de sangue, utilizando PostgreSQL e uma interface de linha de comando (CLI) em Python.
+
+## Pré-requisitos
 - Docker & Docker Compose
 - Python 3.9+
-- Node.js 16+
 
-## 1. Database Setup
-Start the PostgreSQL database using Docker:
+## 1. Configuração do Banco de Dados
+Inicie o banco de dados PostgreSQL usando Docker:
 ```bash
 docker-compose up -d
 ```
-This will automatically:
-- Start a PostgreSQL 15 container on port **5433** (to avoid conflicts).
-- Create the schema (`esquema.sql`).
-- Populate initial data (`dados.sql`).
+Isso irá automaticamente:
+- Iniciar um container PostgreSQL na porta **5433** (para evitar conflitos).
+- Criar o esquema (`esquema.sql`).
+- Popular dados iniciais (`dados.sql`).
+- Habilitar a extensão `unaccent` para buscas insensíveis a acentos.
 
-## 2. Backend Setup
-Navigate to the `backend` directory:
-```bash
-cd backend
-```
-
-Create a virtual environment and install dependencies:
+## 2. Configuração da Aplicação
+Instale as dependências do Python (recomendado usar um ambiente virtual):
 ```bash
 python3 -m venv venv
 source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-Run the FastAPI server:
+## 3. Executando a Aplicação
+Para iniciar a interface de linha de comando:
 ```bash
-uvicorn main:app --reload --host 0.0.0.0 --port 8000
-```
-The API will be available at `http://localhost:8000`.
-Documentation: `http://localhost:8000/docs`
-
-## 3. Frontend Setup
-Navigate to the `frontend` directory:
-```bash
-cd frontend
+python3 shell_app.py
 ```
 
-Install dependencies:
-```bash
-npm install
-```
+## Funcionalidades e Perfis de Usuário
 
-Run the React application:
-```bash
-npm run dev
-```
-The application will be available at `http://localhost:5173`.
+O sistema possui diferentes menus baseados no perfil do usuário logado. Abaixo estão as credenciais padrão para teste:
 
-## Features
-- **Cadastro de Doador**: Register a new donor (inserts into `Pessoa`, `TipoPessoa`, `Doador`).
-- **Consulta de Estoque**: View blood stock per Hemocentro (parameterized query).
+### Perfis de Teste
+| Perfil | Usuário | Senha | Descrição |
+| :--- | :--- | :--- | :--- |
+| **Admin** | `admin` | `admin` | Acesso total a métricas, cadastro de usuários e gestão. |
+| **Médico** | `medico` | `123` | Visualiza doadores, receptores e tendências de atendimento. |
+| **Enfermeiro** | `enfermeiro` | `123` | Realiza triagens e visualiza histórico de doadores. |
+| **Biomédico** | `biomedico` | `123` | Gerencia estoque, testagens e visualiza dados anonimizados. |
+| **Agente** | `agente` | `123` | Visualiza doadores anonimizados e campanhas. |
 
-## Files
-- `esquema.sql`: Database schema.
-- `dados.sql`: Initial data population.
-- `consultas.sql`: 5 complex SQL queries.
-- `backend/`: Python/FastAPI backend.
-- `frontend/`: React/Vite frontend.
+### Consultas Avançadas (*)
+As consultas marcadas com `(*)` no menu são análises avançadas implementadas especificamente para este projeto:
+
+1.  **Estoque por Cidade (Admin)**: Busca insensível a acentos (ex: "sao paulo" encontra "São Paulo").
+2.  **Análise de Tendências (Médico)**: Identifica o dia da semana com mais atendimentos para o médico logado.
+3.  **Compatibilidade Doador-Receptor (Médico)**: Lista pares compatíveis baseados no tipo sanguíneo.
+4.  **Procedimentos Anonimizados (Biomédico)**: Exibe procedimentos com nomes de pacientes mascarados.
+5.  **Efetividade de Testagens (Biomédico)**: Calcula % de bolsas aprovadas pelo biomédico logado.
+6.  **Doadores Anonimizados (Agente)**: Lista doadores com dados sensíveis ocultos.
+7.  **Campanhas de Doação (Agente)**: Contagem de doações em um período específico.
+
+## Arquivos Principais
+- `shell_app.py`: Aplicação principal (CLI).
+- `consultas.sql`: Arquivo contendo todas as queries SQL utilizadas.
+- `esquema.sql`: Definição das tabelas e relacionamentos.
+- `dados.sql`: Dados fictícios para teste.
