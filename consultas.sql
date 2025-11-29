@@ -92,19 +92,6 @@ WHERE NOT EXISTS (
     (SELECT Hemocentro FROM Solicitacao WHERE Hospital = H.CNPJ)
 );
 
--- name: map_data
--- Dados para mapa
-SELECT 
-    I.CNPJ, 
-    I.nome, 
-    I.Latitude, 
-    I.Longitude,
-    STRING_AGG(T.tipo, ', ') as tipos
-FROM InstituicaoSaude I
-LEFT JOIN TipoInstituicao T ON I.CNPJ = T.CNPJ
-WHERE I.Latitude IS NOT NULL AND I.Longitude IS NOT NULL
-GROUP BY I.CNPJ, I.nome, I.Latitude, I.Longitude;
-
 -- name: procedures_by_doctor
 -- Procedimentos por médico
 SELECT P.nome, COUNT(Pr.Medico) as total_procedimentos
@@ -234,7 +221,6 @@ ORDER BY mes DESC;
 
 -- name: receptors_by_blood_type
 -- (*) Receptores por Tipo Sanguíneo Compatível
--- Note: This is a simplified compatibility check.
 SELECT P.nome, P.tiposanguineo, P.cidade
 FROM Receptor R
 JOIN Pessoa P ON R.Id = P.Id
