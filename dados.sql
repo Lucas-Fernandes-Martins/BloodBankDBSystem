@@ -101,15 +101,15 @@ INSERT INTO Transferencia (HemoOrigem, HemoDestino, DataHora, QntOPlus, QntOMinu
 ('98.765.432/0001-10', '98.765.432/0001-10', '2023-10-10 15:00:00', 2, 0, 0, 0, 0, 0, 0, 0, TRUE); -- Self transfer for example, or need another Hemocentro
 
 -- 16. Usuarios
-INSERT INTO Usuario (Login, Senha, Role) VALUES
-('admin', 'admin', 'admin'),
-('medico', '123', 'medico'),
-('enfermeiro', '123', 'enfermeiro'),
-('biomedico', '123', 'biomedico'),
-('agente', '123', 'agente'),
-('instituicao', '123', 'instituicao'),
-('doador', '123', 'doador'),
-('receptor', '123', 'receptor');
+INSERT INTO Usuario (Login, Senha, Role, PessoaId) VALUES
+('admin', 'admin', 'admin', NULL),
+('medico', '123', 'medico', 'P003'),
+('enfermeiro', '123', 'enfermeiro', 'P004'),
+('biomedico', '123', 'biomedico', 'P005'),
+('agente', '123', 'agente', 'P006'),
+('instituicao', '123', 'instituicao', NULL),
+('doador', '123', 'doador', 'P001'),
+('receptor', '123', 'receptor', 'P002');
 
 -- 17. Permissoes
 INSERT INTO Permissao (Id, Nome) VALUES

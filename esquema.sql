@@ -1,4 +1,5 @@
 ------- CRIACAO DAS TABELAS
+CREATE EXTENSION IF NOT EXISTS unaccent;
 
 -- 1. InstituicaoSaude (Supertype)
 CREATE TABLE InstituicaoSaude (
@@ -281,7 +282,9 @@ CREATE TABLE Usuario (
     Login VARCHAR(50),
     Senha VARCHAR(50) NOT NULL,
     Role VARCHAR(20) NOT NULL,
-    CONSTRAINT PK_USUARIO PRIMARY KEY(Login)
+    PessoaId VARCHAR(10),
+    CONSTRAINT PK_USUARIO PRIMARY KEY(Login),
+    CONSTRAINT FK_USUARIO_PESSOA FOREIGN KEY (PessoaId) REFERENCES Pessoa(Id)
 );
 
 -- 17. RBAC (Permissions)

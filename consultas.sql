@@ -1,63 +1,316 @@
--- Consultas do Sistema
+-- name: list_agentes
+-- Obter todos os agentes de mapeamento
+SELECT P.Id, P.nome
+FROM AgenteMapeamento A
+JOIN Pessoa P ON A.Id = P.Id;
 
--- 1. Divisão Relacional
--- Encontrar doadores que doaram TODOS os tipos de sangue que o Hospital 'Hospital Santa Casa' já solicitou.
--- (Neste exemplo simplificado, verificamos se o doador doou sangue do mesmo tipo que TODAS as solicitações de um hospital específico exigiram O+)
--- Uma aplicação mais prática: Encontrar Hemocentros que atenderam a TODAS as solicitações de um determinado Hospital.
+-- name: check_permission
+-- Verificar se o papel (role) tem permissão específica
+SELECT 1
+FROM RolePermissao RP
+JOIN Permissao P ON RP.PermissaoId = P.Id
+WHERE RP.Role = %s AND P.Nome = %s;
 
-SELECT H.nome
-FROM Hemocentro H
-JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
-WHERE NOT EXISTS (
-    SELECT S.DataHora
-    FROM Solicitacao S
-    WHERE S.Hospital = (SELECT CNPJ FROM InstituicaoSaude WHERE nome = 'Hospital Santa Casa')
-    AND NOT EXISTS (
-        SELECT S2.DataHora
-        FROM Solicitacao S2
-        WHERE S2.Hemocentro = H.CNPJ
-        AND S2.Hospital = S.Hospital
-        AND S2.DataHora = S.DataHora
-        AND S2.AceitaNegada = TRUE
-    )
-);
+-- name: login
+-- Autenticar usuário
+SELECT Role, PessoaId
+FROM Usuario
+WHERE Login = %s AND Senha = %s;
 
--- 2. Junção Interna com Agrupamento (GROUP BY) e Ordenação
--- Listar a quantidade total de bolsas de sangue coletadas por cada Centro de Coleta, ordenado do maior para o menor.
-SELECT ISaude.nome, COUNT(B.Codigo) as TotalBolsas
-FROM CentroDeColeta CC
-JOIN InstituicaoSaude ISaude ON CC.CNPJ = ISaude.CNPJ
-JOIN Triagem T ON CC.CNPJ = T.CentroColeta_CNPJ AND CC.codigo = T.CentroColeta_Codigo
-JOIN BolsaSangue B ON T.IdTriagem = B.Triagem
-GROUP BY ISaude.nome
-ORDER BY TotalBolsas DESC;
+-- name: list_biomedicos
+-- Obter todos os biomédicos
+SELECT P.Id, P.nome, B.CRBM
+FROM Biomedico B
+JOIN Pessoa P ON B.Id = P.Id;
 
--- 3. Junção Externa (LEFT JOIN)
--- Listar todas as Pessoas cadastradas e mostrar se são Doadores (exibindo o peso) ou não.
-SELECT P.nome, D.peso
-FROM Pessoa P
-LEFT JOIN Doador D ON P.Id = D.Id;
+-- name: list_doadores
+-- Obter todos os doadores
+SELECT P.Id, P.nome, P.cpf
+FROM Doador D
+JOIN Pessoa P ON D.Id = P.Id;
 
--- 4. Subconsulta Correlacionada
--- Listar os Doadores que doaram um volume de sangue ACIMA da média de volume de todas as doações.
-SELECT P.nome, B.VolumeDoado
-FROM Pessoa P
-JOIN Doador D ON P.Id = D.Id
-JOIN Triagem T ON D.Id = T.Doador
-JOIN BolsaSangue B ON T.IdTriagem = B.Triagem
-WHERE B.VolumeDoado > (
-    SELECT AVG(VolumeDoado)
-    FROM BolsaSangue
-);
+-- name: list_enfermeiros
+-- Obter todos os enfermeiros
+SELECT P.Id, P.nome, E.COREN
+FROM Enfermeiro E
+JOIN Pessoa P ON E.Id = P.Id;
 
--- 5. Consulta com Múltiplas Junções e Filtro
--- Relatório detalhado de doações: Nome do Doador, Data da Doação, Nome do Enfermeiro responsável e Nome do Centro de Coleta, apenas para doações Válidas.
-SELECT P_Doador.nome AS Doador, T.DataHora, P_Enf.nome AS Enfermeiro, ISaude.nome AS CentroColeta
+-- name: list_triagens
+-- Obter triagens válidas
+SELECT T.IdTriagem, P.nome as doador_nome, T.DataHora
 FROM Triagem T
 JOIN Doador D ON T.Doador = D.Id
-JOIN Pessoa P_Doador ON D.Id = P_Doador.Id
-JOIN Enfermeiro E ON T.Enfermeiro = E.Id
-JOIN Pessoa P_Enf ON E.Id = P_Enf.Id
-JOIN CentroDeColeta CC ON T.CentroColeta_CNPJ = CC.CNPJ AND T.CentroColeta_Codigo = CC.CentroColeta_Codigo
-JOIN InstituicaoSaude ISaude ON CC.CNPJ = ISaude.CNPJ
+JOIN Pessoa P ON D.Id = P.Id
 WHERE T.Valido = TRUE;
+
+-- name: list_medicos
+-- Obter todos os médicos
+SELECT P.Id, P.nome, M.CRM
+FROM Medico M
+JOIN Pessoa P ON M.Id = P.Id;
+
+-- name: blood_stock_by_type
+-- Estoque por tipo sanguíneo
+SELECT TipoSangue, COUNT(*) as total
+FROM BolsaSangue
+WHERE Valido = TRUE
+GROUP BY TipoSangue
+ORDER BY total DESC;
+
+-- name: doadores_anonimos
+-- Doadores anonimizados
+SELECT 
+    CONCAT(LEFT(nome, 1), REPEAT('*', 5)) as nome_anonimizado,
+    CONCAT(LEFT(cpf, 3), '.***.***-**') as cpf_mascarado,
+    EXTRACT(YEAR FROM AGE(CURRENT_DATE, dataNascimento)) as idade,
+    genero,
+    tiposanguineo
+FROM Pessoa P
+JOIN Doador D ON P.Id = D.Id;
+
+-- name: estoque
+-- Estoque completo (opcionalmente filtrado por instituicao se adicionar WHERE)
+SELECT ISaude.nome, E.*
+FROM EstoqueSangue E
+JOIN InstituicaoSaude ISaude ON E.InstituicaoSaude = ISaude.CNPJ;
+
+-- name: estoque_filtrado
+-- Estoque filtrado por instituição
+SELECT ISaude.nome, E.*
+FROM EstoqueSangue E
+JOIN InstituicaoSaude ISaude ON E.InstituicaoSaude = ISaude.CNPJ
+WHERE E.InstituicaoSaude = %s;
+
+-- name: hospitals_all_hemocentros
+-- Divisão Relacional: Hospitais que pediram a todos os hemocentros
+SELECT I.nome, H.CNPJ
+FROM Hospital H
+JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
+WHERE NOT EXISTS (
+    (SELECT CNPJ FROM Hemocentro)
+    EXCEPT
+    (SELECT Hemocentro FROM Solicitacao WHERE Hospital = H.CNPJ)
+);
+
+-- name: map_data
+-- Dados para mapa
+SELECT 
+    I.CNPJ, 
+    I.nome, 
+    I.Latitude, 
+    I.Longitude,
+    STRING_AGG(T.tipo, ', ') as tipos
+FROM InstituicaoSaude I
+LEFT JOIN TipoInstituicao T ON I.CNPJ = T.CNPJ
+WHERE I.Latitude IS NOT NULL AND I.Longitude IS NOT NULL
+GROUP BY I.CNPJ, I.nome, I.Latitude, I.Longitude;
+
+-- name: procedures_by_doctor
+-- Procedimentos por médico
+SELECT P.nome, COUNT(Pr.Medico) as total_procedimentos
+FROM Medico M
+JOIN Pessoa P ON M.Id = P.Id
+JOIN Procedimento Pr ON M.Id = Pr.Medico
+GROUP BY M.Id, P.nome
+ORDER BY total_procedimentos DESC;
+
+-- name: solicitations_by_hospital
+-- Solicitações por hospital
+SELECT I.nome, COUNT(S.Hospital) as total_solicitacoes
+FROM Hospital H
+JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ
+LEFT JOIN Solicitacao S ON H.CNPJ = S.Hospital
+GROUP BY H.CNPJ, I.nome
+ORDER BY total_solicitacoes DESC;
+
+-- name: list_centros_coleta
+-- Listar centros de coleta
+SELECT C.CNPJ, C.codigo, I.nome
+FROM CentroDeColeta C
+JOIN InstituicaoSaude I ON C.CNPJ = I.CNPJ;
+
+-- name: list_hemocentros
+-- Listar hemocentros
+SELECT H.CNPJ, I.nome
+FROM Hemocentro H
+JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ;
+
+-- name: list_hospitais
+-- Listar hospitais
+SELECT H.CNPJ, I.nome
+FROM Hospital H
+JOIN InstituicaoSaude I ON H.CNPJ = I.CNPJ;
+
+-- name: list_receptores
+-- Listar receptores
+SELECT P.Id, P.nome, P.cpf
+FROM Receptor R
+JOIN Pessoa P ON R.Id = P.Id;
+
+-- name: insert_pessoa
+-- Inserir nova pessoa
+INSERT INTO Pessoa (Id, Nome, Genero, TipoSanguineo, Cidade, Estado, Logradouro, DataNascimento, Telefone, Email, CPF)
+VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+
+-- name: insert_tipopessoa
+-- Inserir tipo de pessoa
+INSERT INTO TipoPessoa (Id, Tipo)
+VALUES (%s, %s);
+
+-- name: insert_usuario
+-- Inserir novo usuário
+INSERT INTO Usuario (Login, Senha, Role, PessoaId)
+VALUES (%s, %s, %s, %s);
+
+-- name: insert_medico
+-- Inserir médico
+INSERT INTO Medico (Id, CRM)
+VALUES (%s, %s);
+
+-- name: insert_enfermeiro
+-- Inserir enfermeiro
+INSERT INTO Enfermeiro (Id, COREN)
+VALUES (%s, %s);
+
+-- name: insert_biomedico
+-- Inserir biomédico
+INSERT INTO Biomedico (Id, CRBM)
+VALUES (%s, %s);
+
+-- name: insert_agente
+-- Inserir agente
+INSERT INTO AgenteMapeamento (Id)
+VALUES (%s);
+
+-- name: insert_doador
+-- Inserir doador
+INSERT INTO Doador (Id, Peso, Altura)
+VALUES (%s, %s, %s);
+
+-- name: procedimentos_anonimos
+-- (*) Procedimentos anonimizados (Biomédico)
+SELECT 
+    CONCAT(LEFT(P.nome, 1), REPEAT('*', 5)) as paciente_anonimizado,
+    Pr.DataHora,
+    Pr.Hospital,
+    M.CRM as medico_crm
+FROM Procedimento Pr
+JOIN Receptor R ON Pr.Receptor = R.Id
+JOIN Pessoa P ON R.Id = P.Id
+JOIN Medico M ON Pr.Medico = M.Id;
+
+-- name: stock_by_city
+-- (*) Estoque por Cidade
+SELECT 
+    I.cidade,
+    SUM(E.NumOPlus + E.NumOMinus + E.NumAPlus + E.NumAMinus + E.NumBPlus + E.NumBMinus + E.NumABPlus + E.NumABMinus) as total_bolsas
+FROM EstoqueSangue E
+JOIN InstituicaoSaude I ON E.InstituicaoSaude = I.CNPJ
+WHERE UNACCENT(I.cidade) ILIKE UNACCENT(%s)
+GROUP BY I.cidade;
+
+-- name: attendance_trends
+-- (*) Análise de Tendências em Atendimentos (Dia da semana mais frequente)
+SELECT 
+    TO_CHAR(Pr.DataHora, 'Day') as dia_semana,
+    COUNT(*) as frequencia
+FROM Procedimento Pr
+JOIN Medico M ON Pr.Medico = M.Id
+JOIN Receptor R ON Pr.Receptor = R.Id
+WHERE M.Id = %s AND R.Id = %s
+GROUP BY dia_semana
+ORDER BY frequencia DESC
+LIMIT 1;
+
+-- name: donations_per_month
+-- (*) Doações por Mês em determinado centro
+SELECT 
+    TO_CHAR(T.DataHora, 'YYYY-MM') as mes,
+    COUNT(*) as total_doacoes
+FROM Triagem T
+WHERE T.CentroColeta_CNPJ = %s
+GROUP BY mes
+ORDER BY mes DESC;
+
+-- name: receptors_by_blood_type
+-- (*) Receptores por Tipo Sanguíneo Compatível
+-- Note: This is a simplified compatibility check.
+SELECT P.nome, P.tiposanguineo, P.cidade
+FROM Receptor R
+JOIN Pessoa P ON R.Id = P.Id
+WHERE 
+    CASE 
+        WHEN %s = 'O-' THEN TRUE -- O- doa para todos
+        WHEN %s = 'O+' THEN P.tiposanguineo IN ('O+', 'A+', 'B+', 'AB+')
+        WHEN %s = 'A-' THEN P.tiposanguineo IN ('A-', 'A+', 'AB-', 'AB+')
+        WHEN %s = 'A+' THEN P.tiposanguineo IN ('A+', 'AB+')
+        WHEN %s = 'B-' THEN P.tiposanguineo IN ('B-', 'B+', 'AB-', 'AB+')
+        WHEN %s = 'B+' THEN P.tiposanguineo IN ('B+', 'AB+')
+        WHEN %s = 'AB-' THEN P.tiposanguineo IN ('AB-', 'AB+')
+        WHEN %s = 'AB+' THEN P.tiposanguineo = 'AB+'
+        ELSE FALSE
+    END;
+
+-- name: donor_history
+-- (*) Histórico de Doações de um Doador
+SELECT 
+    T.DataHora as data_triagem,
+    T.Valido as triagem_aprovada,
+    B.Codigo as codigo_bolsa,
+    B.Valido as bolsa_valida,
+    B.TipoSangue
+FROM Triagem T
+LEFT JOIN BolsaSangue B ON T.IdTriagem = B.Triagem
+WHERE T.Doador = %s
+ORDER BY T.DataHora DESC;
+
+-- name: testing_effectiveness
+-- (*) Efetividade de Testagens (Biomédico)
+SELECT 
+    COUNT(*) FILTER (WHERE Valido = TRUE) * 100.0 / COUNT(*) as percentual_aprovacao
+FROM BolsaSangue
+WHERE Biomedico = %s;
+
+-- name: solicitations_fulfilled
+-- (*) Solicitações Atendidas (Hospital)
+SELECT 
+    COUNT(*) FILTER (WHERE AceitaNegada = TRUE) * 100.0 / COUNT(*) as percentual_atendidas
+FROM Solicitacao
+WHERE Hospital = %s;
+
+-- name: stock_turnover
+-- (*) Rotatividade de Estoque (Média de dias em estoque)
+-- Proxy: Average days since testing for valid bags currently in stock
+SELECT 
+    AVG(CURRENT_DATE - DataTestagem) as media_dias_estoque
+FROM BolsaSangue
+WHERE Valido = TRUE AND Hemocentro = %s;
+
+-- name: donor_receptor_compatibility
+-- (*) Compatibilidade Doador-Receptor (Todos os pares)
+SELECT 
+    D_P.nome as doador, 
+    D_P.tiposanguineo as tipo_doador,
+    R_P.nome as receptor, 
+    R_P.tiposanguineo as tipo_receptor
+FROM Doador D
+JOIN Pessoa D_P ON D.Id = D_P.Id
+CROSS JOIN Receptor R
+JOIN Pessoa R_P ON R.Id = R_P.Id
+WHERE 
+    (D_P.tiposanguineo = 'O-') OR
+    (D_P.tiposanguineo = 'O+' AND R_P.tiposanguineo IN ('O+', 'A+', 'B+', 'AB+')) OR
+    (D_P.tiposanguineo = 'A-' AND R_P.tiposanguineo IN ('A-', 'A+', 'AB-', 'AB+')) OR
+    (D_P.tiposanguineo = 'A+' AND R_P.tiposanguineo IN ('A+', 'AB+')) OR
+    (D_P.tiposanguineo = 'B-' AND R_P.tiposanguineo IN ('B-', 'B+', 'AB-', 'AB+')) OR
+    (D_P.tiposanguineo = 'B+' AND R_P.tiposanguineo IN ('B+', 'AB+')) OR
+    (D_P.tiposanguineo = 'AB-' AND R_P.tiposanguineo IN ('AB-', 'AB+')) OR
+    (D_P.tiposanguineo = 'AB+' AND R_P.tiposanguineo = 'AB+')
+LIMIT 50;
+
+-- name: campaign_analysis
+-- (*) Campanhas de Doação (Doações por período)
+SELECT 
+    COUNT(*) as total_doadores
+FROM Triagem
+WHERE DataHora BETWEEN %s AND %s;
