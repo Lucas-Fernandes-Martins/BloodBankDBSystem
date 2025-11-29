@@ -21,6 +21,7 @@ function MetricsDashboard() {
     const [solicitations, setSolicitations] = useState([]);
     const [procedures, setProcedures] = useState([]);
     const [mapData, setMapData] = useState([]);
+    const [anonDonors, setAnonDonors] = useState([]);
 
     useEffect(() => {
         const fetchData = async () => {
@@ -36,6 +37,9 @@ function MetricsDashboard() {
 
                 const resMap = await fetch('http://localhost:8000/api/metrics/map-data');
                 if (resMap.ok) setMapData(await resMap.json());
+
+                const resAnon = await fetch('http://localhost:8000/api/relatorios/doadores-anonimos');
+                if (resAnon.ok) setAnonDonors(await resAnon.json());
             } catch (error) {
                 console.error("Error fetching metrics:", error);
             }
@@ -65,6 +69,33 @@ function MetricsDashboard() {
                         ))}
                     </MapContainer>
                 </div>
+            </div>
+
+            <div className="card full-width">
+                <h4>Relatório de Doadores (Anonimizado - LGPD)</h4>
+                <p>Dados sensíveis mascarados via SQL para análise estatística.</p>
+                <table className="results-table">
+                    <thead>
+                        <tr>
+                            <th>Nome (Mascarado)</th>
+                            <th>CPF (Mascarado)</th>
+                            <th>Idade (Generalizada)</th>
+                            <th>Gênero</th>
+                            <th>Tipo Sanguíneo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {anonDonors.map((item, index) => (
+                            <tr key={index}>
+                                <td>{item.nome_anonimizado}</td>
+                                <td>{item.cpf_mascarado}</td>
+                                <td>{item.idade} anos</td>
+                                <td>{item.genero}</td>
+                                <td>{item.tiposanguineo}</td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
             </div>
 
             <div className="card full-width">

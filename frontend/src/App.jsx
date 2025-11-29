@@ -22,7 +22,7 @@ function App() {
     <Router>
       <div className="app-container">
         <nav className="navbar">
-          <h1>Blood Bank System</h1>
+          <h1>Sistema Integrado de Doacao de Sangue</h1>
           <div className="links">
             <Link to="/">Início</Link>
             <Link to="/metrics">Métricas</Link>

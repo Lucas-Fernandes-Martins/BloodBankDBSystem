@@ -110,3 +110,18 @@ INSERT INTO Usuario (Login, Senha, Role) VALUES
 ('instituicao', '123', 'instituicao'),
 ('doador', '123', 'doador'),
 ('receptor', '123', 'receptor');
+
+-- 17. Permissoes
+INSERT INTO Permissao (Id, Nome) VALUES
+(1, 'CADASTRAR_INSTITUICAO'),
+(2, 'VER_METRICAS'),
+(3, 'VER_DADOS_SENSIVEIS');
+
+-- 18. RolePermissao
+INSERT INTO RolePermissao (Role, PermissaoId) VALUES
+('admin', 1), -- Admin can create institutions
+('admin', 2), -- Admin can see metrics
+('admin', 3), -- Admin can see sensitive data
+('instituicao', 2), -- Instituicao can see metrics
+('medico', 3), -- Medico can see sensitive data (e.g. patients)
+('enfermeiro', 3); -- Enfermeiro can see sensitive data

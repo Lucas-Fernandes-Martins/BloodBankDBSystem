@@ -1,7 +1,6 @@
 fastapi
 uvicorn
-pydantic
 psycopg[binary]
 python-dotenv
 psycopg-pool
-email-validator
+
