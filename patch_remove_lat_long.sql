@@ -1,2 +1,0 @@
-ALTER TABLE InstituicaoSaude DROP COLUMN IF EXISTS Latitude;
-ALTER TABLE InstituicaoSaude DROP COLUMN IF EXISTS Longitude;

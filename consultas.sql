@@ -199,7 +199,16 @@ GROUP BY I.cidade;
 -- name: attendance_trends
 -- (*) Análise de Tendências em Atendimentos (Dia da semana mais frequente)
 SELECT 
-    TO_CHAR(Pr.DataHora, 'Day') as dia_semana,
+    CASE TRIM(TO_CHAR(Pr.DataHora, 'Day'))
+        WHEN 'Sunday' THEN 'Domingo'
+        WHEN 'Monday' THEN 'Segunda-feira'
+        WHEN 'Tuesday' THEN 'Terça-feira'
+        WHEN 'Wednesday' THEN 'Quarta-feira'
+        WHEN 'Thursday' THEN 'Quinta-feira'
+        WHEN 'Friday' THEN 'Sexta-feira'
+        WHEN 'Saturday' THEN 'Sábado'
+        ELSE TO_CHAR(Pr.DataHora, 'Day')
+    END as dia_semana,
     COUNT(*) as frequencia
 FROM Procedimento Pr
 JOIN Medico M ON Pr.Medico = M.Id
