@@ -1,11 +1,11 @@
 -- Alimentação Inicial da Base de Dados
 
 -- 1. InstituicaoSaude
-INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro, Latitude, Longitude) VALUES 
-('12.345.678/0001-90', 'Hospital Santa Casa', 'São Paulo', 'SP', 'Rua Dr. Cesario Motta Jr, 112', -23.5423, -46.6492),
-('98.765.432/0001-10', 'Hemocentro Regional', 'Campinas', 'SP', 'Rua Carlos Chagas, 480', -22.8298, -47.0626),
-('11.222.333/0001-44', 'Posto de Coleta Centro', 'São Paulo', 'SP', 'Av. Paulista, 1000', -23.5617, -46.6560),
-('55.666.777/0001-88', 'Hospital das Clinicas', 'São Paulo', 'SP', 'Av. Dr. Enéas Carvalho de Aguiar, 255', -23.5573, -46.6688);
+INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro) VALUES 
+('12.345.678/0001-90', 'Hospital Santa Casa', 'São Paulo', 'SP', 'Rua Dr. Cesario Motta Jr, 112'),
+('98.765.432/0001-10', 'Hemocentro Regional', 'Campinas', 'SP', 'Rua Carlos Chagas, 480'),
+('11.222.333/0001-44', 'Posto de Coleta Centro', 'São Paulo', 'SP', 'Av. Paulista, 1000'),
+('55.666.777/0001-88', 'Hospital das Clinicas', 'São Paulo', 'SP', 'Av. Dr. Enéas Carvalho de Aguiar, 255');
 
 -- 2. Subtypes
 INSERT INTO Hospital (CNPJ) VALUES 

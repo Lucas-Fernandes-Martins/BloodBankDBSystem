@@ -92,18 +92,7 @@ WHERE NOT EXISTS (
     (SELECT Hemocentro FROM Solicitacao WHERE Hospital = H.CNPJ)
 );
 
--- name: map_data
--- Dados para mapa
-SELECT 
-    I.CNPJ, 
-    I.nome, 
-    I.Latitude, 
-    I.Longitude,
-    STRING_AGG(T.tipo, ', ') as tipos
-FROM InstituicaoSaude I
-LEFT JOIN TipoInstituicao T ON I.CNPJ = T.CNPJ
-WHERE I.Latitude IS NOT NULL AND I.Longitude IS NOT NULL
-GROUP BY I.CNPJ, I.nome, I.Latitude, I.Longitude;
+
 
 -- name: procedures_by_doctor
 -- Procedimentos por médico
@@ -267,9 +256,11 @@ ORDER BY T.DataHora DESC;
 -- name: testing_effectiveness
 -- (*) Efetividade de Testagens (Biomédico)
 SELECT 
-    COUNT(*) FILTER (WHERE Valido = TRUE) * 100.0 / COUNT(*) as percentual_aprovacao
-FROM BolsaSangue
-WHERE Biomedico = %s;
+    COUNT(B_Valid.Codigo) * 100.0 / COUNT(B_Total.Codigo) as percentual_aprovacao
+FROM BolsaSangue B_Total
+LEFT JOIN BolsaSangue B_Valid ON B_Total.Codigo = B_Valid.Codigo AND B_Valid.Valido = TRUE
+WHERE B_Total.Biomedico = %s
+GROUP BY B_Total.Biomedico;
 
 -- name: solicitations_fulfilled
 -- (*) Solicitações Atendidas (Hospital)

@@ -8,8 +8,6 @@ CREATE TABLE InstituicaoSaude (
     cidade VARCHAR(40),
     estado VARCHAR(2),
     logradouro VARCHAR(100),
-    Latitude DECIMAL(10, 8),
-    Longitude DECIMAL(11, 8),
     CONSTRAINT PK_INSTITUICAO PRIMARY KEY(Id),
     CONSTRAINT CHK_INSTITUICAO CHECK (CNPJ ~ '^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')
 );
