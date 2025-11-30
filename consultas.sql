@@ -92,8 +92,6 @@ WHERE NOT EXISTS (
     (SELECT Hemocentro FROM Solicitacao WHERE Hospital = H.CNPJ)
 );
 
-
-
 -- name: procedures_by_doctor
 -- Procedimentos por médico
 SELECT P.nome, COUNT(Pr.Medico) as total_procedimentos
@@ -223,7 +221,6 @@ ORDER BY mes DESC;
 
 -- name: receptors_by_blood_type
 -- (*) Receptores por Tipo Sanguíneo Compatível
--- Note: This is a simplified compatibility check.
 SELECT P.nome, P.tiposanguineo, P.cidade
 FROM Receptor R
 JOIN Pessoa P ON R.Id = P.Id
