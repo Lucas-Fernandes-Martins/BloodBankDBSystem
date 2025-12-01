@@ -1,7 +1,7 @@
 ------- CRIACAO DAS TABELAS
 CREATE EXTENSION IF NOT EXISTS unaccent;
 
--- 1. InstituicaoSaude (Supertype)
+-- 1. InstituicaoSaude (Supertipo)
 CREATE TABLE InstituicaoSaude (
     CNPJ CHAR(18),
     nome VARCHAR(40) NOT NULL,
@@ -12,7 +12,7 @@ CREATE TABLE InstituicaoSaude (
     CONSTRAINT CHK_INSTITUICAO CHECK (CNPJ ~ '^\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}$')
 );
 
--- 2. Subtypes of InstituicaoSaude
+-- 2. Subtipos de InstituicaoSaude
 CREATE TABLE Hospital (
     CNPJ CHAR(18),
     CONSTRAINT PK_HOSPITAL PRIMARY KEY(CNPJ),
@@ -39,7 +39,7 @@ CREATE TABLE CentroDeColeta (
     CONSTRAINT CK_ABERTUTA CHECK (dataAbertura <= dataFechamento)
 );
 
--- 3. TipoInstituicao (Multivalued Attribute / Classification)
+-- 3. TipoInstituicao (Atributo Multivalorado / Classificacao)
 CREATE TABLE TipoInstituicao (
     CNPJ CHAR(18),
     tipo VARCHAR(20),
@@ -71,7 +71,7 @@ CREATE TABLE EstoqueSangue (
     CONSTRAINT CHK_ABP CHECK (NumABPlus >=0)
 );
 
--- 5. Pessoa (Supertype)
+-- 5. Pessoa (Supertipo)
 CREATE TABLE Pessoa (
     Id VARCHAR(10),
     CPF CHAR(14),
@@ -93,7 +93,7 @@ CREATE TABLE Pessoa (
     CONSTRAINT CHK_TIPOSANGUINEO CHECK (tiposanguineo IN ('O-', 'A-', 'B-', 'AB-', 'O+', 'A+', 'B+', 'AB+'))
 );
 
--- 6. TipoPessoa (Multivalued Attribute)
+-- 6. TipoPessoa (Atributo Multivalorado)
 CREATE TABLE TipoPessoa (
     Id VARCHAR(10),
     tipo VARCHAR(20),
@@ -101,7 +101,7 @@ CREATE TABLE TipoPessoa (
     CONSTRAINT FK_TIPOPESSOA FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
 );
 
--- 7. Subtypes of Pessoa (Profesionais)
+-- 7. Subtipos de Pessoa (Profissionais)
 CREATE TABLE Biomedico (
     Id VARCHAR(10),
     CRBM VARCHAR(10),
@@ -132,7 +132,7 @@ CREATE TABLE AgenteMapeamento (
     CONSTRAINT FK_AGENTE FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
 );
 
--- 8. Subtypes of Pessoa (Clients)
+-- 8. Subtipos de Pessoa (Clientes)
 CREATE TABLE Doador (
     Id VARCHAR(10),
     peso DECIMAL(5,2),
@@ -149,7 +149,7 @@ CREATE TABLE Receptor (
     CONSTRAINT FK_RECEPTOR FOREIGN KEY (Id) REFERENCES Pessoa(Id) ON DELETE CASCADE
 );
 
--- 9. Multivalued Attributes for Clients
+-- 9. Atributos Multivalorados para Clientes
 CREATE TABLE ISTDoador (
     Id VARCHAR(10),
     IST VARCHAR(50),
@@ -275,7 +275,7 @@ CREATE TABLE Transferencia (
     CONSTRAINT CHK_ABP CHECK (QntABPlus >=0)
 );
 
--- 16. Usuario (Authentication)
+-- 16. Usuario (Autenticacao)
 CREATE TABLE Usuario (
     Login VARCHAR(50),
     Senha VARCHAR(50) NOT NULL,
@@ -285,7 +285,7 @@ CREATE TABLE Usuario (
     CONSTRAINT FK_USUARIO_PESSOA FOREIGN KEY (PessoaId) REFERENCES Pessoa(Id)
 );
 
--- 17. RBAC (Permissions)
+-- 17. RBAC (Permissoes)
 CREATE TABLE Permissao (
     Id INT PRIMARY KEY,
     Nome VARCHAR(50) UNIQUE NOT NULL

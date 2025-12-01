@@ -1,4 +1,4 @@
--- Alimentação Inicial da Base de Dados
+-- Alimentacao Inicial da Base de Dados
 
 -- 1. InstituicaoSaude
 INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro) VALUES 
@@ -7,7 +7,7 @@ INSERT INTO InstituicaoSaude (CNPJ, nome, cidade, estado, logradouro) VALUES
 ('11.222.333/0001-44', 'Posto de Coleta Centro', 'São Paulo', 'SP', 'Av. Paulista, 1000'),
 ('55.666.777/0001-88', 'Hospital das Clinicas', 'São Paulo', 'SP', 'Av. Dr. Enéas Carvalho de Aguiar, 255');
 
--- 2. Subtypes
+-- 2. Subtipos
 INSERT INTO Hospital (CNPJ) VALUES 
 ('12.345.678/0001-90'),
 ('55.666.777/0001-88');
@@ -58,13 +58,13 @@ INSERT INTO AgenteMapeamento (Id) VALUES ('P006');
 -- 8. Clientes
 INSERT INTO Doador (Id, peso, altura) VALUES 
 ('P001', 80.5, 1.75),
-('P002', 65.0, 1.65); -- Maria também pode ser doadora em outro contexto, mas aqui é Receptor primário
+('P002', 65.0, 1.65); -- Maria tambem pode ser doadora em outro contexto, mas aqui eh Receptor primario
 
 INSERT INTO Receptor (Id) VALUES 
 ('P002'),
-('P001'); -- João pode ser receptor também
+('P001'); -- Joao pode ser receptor tambem
 
--- 9. Multivalued Attributes
+-- 9. Atributos Multivalorados
 INSERT INTO ISTDoador (Id, IST) VALUES 
 ('P001', 'Nenhuma');
 
@@ -98,7 +98,7 @@ INSERT INTO Solicitacao (Hospital, DataHora, Hemocentro, QntOPlus, QntOMinus, Qn
 
 -- 15. Transferencia
 INSERT INTO Transferencia (HemoOrigem, HemoDestino, DataHora, QntOPlus, QntOMinus, QntAPlus, QntAMinus, QntBPlus, QntBMinus, QntABPlus, QntABMinus, AceitaNegada) VALUES 
-('98.765.432/0001-10', '98.765.432/0001-10', '2023-10-10 15:00:00', 2, 0, 0, 0, 0, 0, 0, 0, TRUE); -- Self transfer for example, or need another Hemocentro
+('98.765.432/0001-10', '98.765.432/0001-10', '2023-10-10 15:00:00', 2, 0, 0, 0, 0, 0, 0, 0, TRUE); -- Transferencia propria por exemplo, ou precisa de outro Hemocentro
 
 -- 16. Usuarios
 INSERT INTO Usuario (Login, Senha, Role, PessoaId) VALUES
@@ -119,9 +119,9 @@ INSERT INTO Permissao (Id, Nome) VALUES
 
 -- 18. RolePermissao
 INSERT INTO RolePermissao (Role, PermissaoId) VALUES
-('admin', 1), -- Admin can create institutions
-('admin', 2), -- Admin can see metrics
-('admin', 3), -- Admin can see sensitive data
-('instituicao', 2), -- Instituicao can see metrics
-('medico', 3), -- Medico can see sensitive data (e.g. patients)
-('enfermeiro', 3); -- Enfermeiro can see sensitive data
+('admin', 1), -- Admin pode criar instituicoes
+('admin', 2), -- Admin pode ver metricas
+('admin', 3), -- Admin pode ver dados sensiveis
+('instituicao', 2), -- Instituicao pode ver metricas
+('medico', 3), -- Medico pode ver dados sensiveis (ex: pacientes)
+('enfermeiro', 3); -- Enfermeiro pode ver dados sensiveis

@@ -22,6 +22,7 @@ def load_queries(filepath):
     try:
         with open(filepath, 'r', encoding='utf-8') as f:
             for line in f:
+                # Identifica inicio de uma nova query
                 if line.strip().startswith('-- name:'):
                     if current_name:
                         queries[current_name] = '\n'.join(current_sql).strip()
@@ -93,6 +94,7 @@ def register_user(queries):
     new_id = generate_id()
     
     try:
+        # Ordem importa: Pessoa -> Tipo -> Dados Especificos -> Usuario
         # 1. Insert Pessoa
         execute_query('insert_pessoa', queries['insert_pessoa'], (
             new_id, nome, 'OUTRO', None, None, None, None, data_nascimento, None, None, cpf
@@ -188,6 +190,7 @@ def run_campaign_analysis(queries, user):
     print_results(results)
 
 def run_simple_query(query_name):
+    # Cria uma funcao dinamicamente para o menu
     def _run(queries, user):
         results = execute_query(query_name, queries[query_name])
         print_results(results)
