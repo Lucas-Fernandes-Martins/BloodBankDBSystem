@@ -1,0 +1,14 @@
+services:
+  db:
+    image: postgres:15
+    container_name: bloodbank_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: bloodbank
+    ports:
+      - "5433:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+      - ./esquema.sql:/docker-entrypoint-initdb.d/1_esquema.sql
+      - ./dados.sql:/docker-entrypoint-initdb.d/2_dados.sql
